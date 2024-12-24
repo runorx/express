@@ -38,16 +38,16 @@ app.use("/api/account", accountRoute);
 const accountRequestRoute = require("./routes/accountRequestRoutes");
 app.use("/api/request", accountRequestRoute);
 
-//serve Frontend
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../Frontend/dist")));
+// //serve Frontend
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static(path.join(__dirname, "../Frontend/dist")));
 
-  app.get("*", (req, res) =>
-    res.sendFile(
-      path.resolve(__dirname, "../", "Frontend", "dist", "index.html")
-    )
-  );
-}
+//   app.get("*", (req, res) =>
+//     res.sendFile(
+//       path.resolve(__dirname, "../", "Frontend", "dist", "index.html")
+//     )
+//   );
+// }
 
 connectToMongoose()
   .then(() => {
