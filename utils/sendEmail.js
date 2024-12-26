@@ -1,133 +1,192 @@
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
+// const nodemailer = require("nodemailer");
+// const crypto = require("crypto");
 
-// Create a transporter using SMTP with TLS support
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT,
-  secure: false, // Use false for port 587 (non-SSL/TLS)
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  tls: {
-    rejectUnauthorized: false // Only use this for testing. Remove in production.
-  }
-});
+// let otpStore = {}; // Temporary storage for OTPs (use a more secure method for production)
 
-// Verify transporter configuration
-transporter.verify(function(error, success) {
-  if (error) {
-    console.log('Transporter verification error:', error);
-  } else {
-    console.log('Server is ready to take our messages');
-  }
-});
+// /**
+//  * Generate a 6-digit OTP
+//  */
+// const generateOTP = () => {
+//   return Math.floor(100000 + Math.random() * 900000);
+// };
 
-// Generate a secure random 6-digit confirmation code
-const generateConfirmationCode = () => {
-  return crypto.randomInt(100000, 999999).toString();
+// /**
+//  * Send an OTP email
+//  * @param {string} email - Recipient email address
+//  * @returns {Promise<number>} - Returns the OTP
+//  */
+// const sendOTPEmail = async (email) => {
+//   const otp = generateOTP();
+
+//   // Save OTP in the store with a TTL (time-to-live) of 5 minutes
+//   otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
+
+//   const transporter = nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       user: process.env.GMAIL_USER, // Replace with your Gmail address
+//       pass: process.env.GMAIL_PASS, // Replace with your Gmail App Password
+//     },
+//   });
+
+//   const mailOptions = {
+//     from: process.env.GMAIL_USER,
+//     to: email,
+//     subject: "Your OTP for Login",
+//     text: `Your OTP for login is: ${otp}. It will expire in 5 minutes.`,
+//   };
+
+//   await transporter.sendMail(mailOptions);
+
+//   return otp;
+// };
+
+// /**
+//  * Verify the OTP
+//  * @param {string} email - Email for which OTP was sent
+//  * @param {number} otp - OTP to verify
+//  * @returns {boolean} - Returns true if OTP is valid
+//  */
+// const verifyOTP = (email, otp) => {
+//   const storedOtpData = otpStore[email];
+
+//   if (!storedOtpData) return false;
+//   if (storedOtpData.expiresAt < Date.now()) {
+//     delete otpStore[email];
+//     return false; // OTP expired
+//   }
+
+//   if (storedOtpData.otp === otp) {
+//     delete otpStore[email]; // OTP used, remove from store
+//     return true;
+//   }
+
+//   return false;
+// };
+
+// module.exports = { sendOTPEmail, verifyOTP };
+
+
+
+const nodemailer = require("nodemailer");
+const crypto = require("crypto");
+
+let otpStore = {}; // Temporary storage for OTPs (use a more secure method for production)
+
+/**
+ * Generate a 6-digit OTP
+ */
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000);
 };
 
-// Store confirmation codes with expiration times (15 minutes)
-const confirmationCodes = new Map();
+/**
+ * Send an OTP email
+ * @param {string} email - Recipient email address
+ * @returns {Promise<number>} - Returns the OTP
+ */
+const sendOTPEmail = async (email) => {
+  const otp = generateOTP();
 
-// Send confirmation code email
-const sendConfirmationCode = async (email) => {
-  const code = generateConfirmationCode();
-  const expirationTime = Date.now() + 15 * 60 * 1000; // 15 minutes from now
+  // Save OTP in the store with a TTL (time-to-live) of 5 minutes
+  otpStore[email] = { otp, expiresAt: Date.now() + 5 * 60 * 1000 };
 
-  // Store the code with its expiration time
-  confirmationCodes.set(email, { code, expirationTime });
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.GMAIL_USER, // Replace with your Gmail address
+      pass: process.env.GMAIL_PASS, // Replace with your Gmail App Password
+    },
+  });
 
-  // Email content
   const mailOptions = {
-    from: process.env.EMAIL_FROM,
+    from: '"Express Bank"  process.env.GMAIL_USER',
     to: email,
-    subject: 'Your Confirmation Code',
-    text: `Your confirmation code is: ${code}\nThis code will expire in 15 minutes.`,
-    html: `<p>Your confirmation code is: <strong>${code}</strong></p><p>This code will expire in 15 minutes.</p>`,
+    subject: "OTP Code",
+
+    html: `
+    <div style="font-family: Arial, sans-serif; background-color: #ffffff; padding: 20px; color: #2c3e50;">
+      <h2 style="color: #1a237e; text-align: center;">Express Bank</h2>
+      <p>Dear Valued Customer,</p>
+      <p>Thank you for banking with Express Bank.</p>
+      <p>Your One-Time Password (OTP) for login is:</p>
+      <div style="background-color: #e0f7fa; color: #1a237e; font-size: 18px; font-weight: bold; padding: 10px; text-align: center; border-radius: 5px;">
+        ${otp}
+      </div>
+      <p style="margin-top: 15px;">It will expire in 5 minutes. Please do not disclose this code to anyone.</p>
+      
+      <p>For further assistance, kindly contact our customer support through the following channels:</p>
+      <ul>
+        <li>Email: <a href="mailto:customerservice@expressbank.com">customerservice@expressbank.com</a></li>
+        <li>Phone: +1-800-123-4567</li>
+      </ul>
+      <p>Thank you for choosing Express Bank.</p>
+      <hr style="border: none; border-top: 1px solid #d1d1d1; margin: 20px 0;">
+      <p style="font-size: 12px; text-align: center;">
+        Headquarters: 123 Financial Avenue, Suite 456, Finance City, FC 78901<br>
+        Copyright © ${new Date().getFullYear()} Express Bank - All rights reserved.
+      </p>
+      <p style="font-size: 12px; text-align: center; color: #7f8c8d;">
+        Express Bank is a fully licensed financial institution regulated by the Central Banking Authority. Your deposits are insured up to applicable limits.<br>
+        This is an automated message. Please do not reply.
+      </p>
+    </div>
+  `,
+    // text: `NONE DISCLOSURE!!! Your OTP for login is: ${otp}. It will expire in 5 minutes. Do not diclose to anyone. `,
+    // text: `
+    // Dear Valued Customer,
+    
+    // Thank you for banking with Express Bank.
+    
+    // Your One-Time Password (OTP) for login is: ${otp}. It will expire in 5 minutes. Please do not disclose this code to anyone.
+    
+    
+    // For further assistance, kindly contact our customer support through the following channels:
+    // - Email: customerservice@expressbank.com
+    // - Phone: +1-800-123-4567
+    
+    // Thank you for choosing Express Bank.
+    
+    // Headquarters: 123 Financial Avenue, Suite 456, Finance City, FC 78901
+    // Copyright © ${new Date().getFullYear()} Express Bank - All rights reserved.
+    
+    // Express Bank is a fully licensed financial institution regulated by the Central Banking Authority. Your deposits are insured up to applicable limits.
+    
+    // ---
+    // This is an automated message. Please do not reply.
+    //   `,
+
+
+ 
   };
 
-  // Attempt to send the email
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Confirmation code sent successfully to', email);
-    console.log('Message ID:', info.messageId);
-    return true;
-  } catch (error) {
-    console.error('Error sending confirmation code:', error);
-    if (error.response) {
-      console.error('SMTP Response:', error.response);
-    }
-    throw new Error('Failed to send confirmation code');
-  }
+  await transporter.sendMail(mailOptions);
+
+  return otp;
 };
 
-// Verify the confirmation code
-const verifyConfirmationCode = (email, code) => {
-  const storedData = confirmationCodes.get(email);
-  if (!storedData) {
-    console.log('No confirmation code stored for this email.');
-    return false;
+/**
+ * Verify the OTP
+ * @param {string} email - Email for which OTP was sent
+ * @param {number} otp - OTP to verify
+ * @returns {boolean} - Returns true if OTP is valid
+ */
+const verifyOTP = (email, otp) => {
+  const storedOtpData = otpStore[email];
+
+  if (!storedOtpData) return false;
+  if (storedOtpData.expiresAt < Date.now()) {
+    delete otpStore[email];
+    return false; // OTP expired
   }
 
-  const { code: storedCode, expirationTime } = storedData;
-
-  // Check if the code has expired
-  if (Date.now() > expirationTime) {
-    confirmationCodes.delete(email); // Remove expired code
-    console.log('Confirmation code expired');
-    return false;
-  }
-
-  // Verify if the provided code matches
-  if (code === storedCode) {
-    confirmationCodes.delete(email); // Remove used code
-    console.log('Confirmation code verified successfully');
+  if (storedOtpData.otp === parseInt(otp)) {
+    delete otpStore[email]; // OTP used, remove from store
     return true;
   }
 
-  console.log('Incorrect confirmation code');
   return false;
 };
 
-// Send login notification email
-const sendLoginNotification = async (email, deviceInfo, location, ipAddress) => {
-  const mailOptions = {
-    from: process.env.EMAIL_FROM,
-    to: email,
-    subject: 'New Login Detected',
-    text: `A new login was detected for your account.\n\nDevice: ${deviceInfo}\nLocation: ${location}\nIP Address: ${ipAddress}\nTime: ${new Date().toUTCString()}\n\nIf this wasn't you, please contact our support team immediately.`,
-    html: `<h2>New Login Detected</h2>
-           <p>A new login was detected for your account.</p>
-           <ul>
-             <li><strong>Device:</strong> ${deviceInfo}</li>
-             <li><strong>Location:</strong> ${location}</li>
-             <li><strong>IP Address:</strong> ${ipAddress}</li>
-             <li><strong>Time:</strong> ${new Date().toUTCString()}</li>
-           </ul>
-           <p>If this wasn't you, please contact our support team immediately.</p>`,
-  };
-
-  // Attempt to send the email
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Login notification sent successfully to', email);
-    console.log('Message ID:', info.messageId);
-    return true;
-  } catch (error) {
-    console.error('Error sending login notification:', error);
-    if (error.response) {
-      console.error('SMTP Response:', error.response);
-    }
-    throw new Error('Failed to send login notification');
-  }
-};
-
-module.exports = {
-  sendConfirmationCode,
-  verifyConfirmationCode,
-  sendLoginNotification,
-};
+module.exports = { sendOTPEmail, verifyOTP };
 
