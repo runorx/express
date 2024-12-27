@@ -77,6 +77,9 @@ const accountSchema = new mongoose.Schema(
       default: 0,
       min: [0, "Balance Can Not Be Less Than 0 L.E!"],
     },
+    acct_no:{
+      type:String,
+    },
     in: [transferedInSchema],
     out: [transferedOutSchema],
     deposit_logs: [depositLogSchema],
