@@ -43,45 +43,69 @@
 
 
 
-/* CORS domains configuration */
+// /* CORS domains configuration */
 
-// Development CORS Configurations
-const devWhitelist = ["http://localhost:3000"];
+// // Development CORS Configurations
+// const devWhitelist = ["http://localhost:3000"];
 
-const corsDevOptions = {
-  origin: function (origin, callback) {
-    if (!origin || devWhitelist.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS error: Origin ${origin} not allowed in development.`));
-    }
-  },
-  credentials: true,
-};
+// const corsDevOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin || devWhitelist.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error(`CORS error: Origin ${origin} not allowed in development.`));
+//     }
+//   },
+//   credentials: true,
+// };
 
-// Production CORS Configurations
+// // Production CORS Configurations
+// const domainsFromEnv = process.env.CORS_DOMAINS || "";
+
+// const productionWhitelist = domainsFromEnv
+//   ? domainsFromEnv.split(",").map((item) => item.trim())
+//   : [];
+
+// const corsProOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin || productionWhitelist.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error(`CORS error: Origin ${origin} not allowed in production.`));
+//     }
+//   },
+//   credentials: true,
+// };
+
+// // Unified Export Based on Environment
+// const isProduction = process.env.NODE_ENV === "production";
+
+// const corsOptions = isProduction ? corsProOptions : corsDevOptions;
+
+// module.exports = {
+//   corsOptions,
+// };
+
+
+
 const domainsFromEnv = process.env.CORS_DOMAINS || "";
 
-const productionWhitelist = domainsFromEnv
+const whitelist = domainsFromEnv
   ? domainsFromEnv.split(",").map((item) => item.trim())
   : [];
 
-const corsProOptions = {
+const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || productionWhitelist.includes(origin)) {
+    if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS error: Origin ${origin} not allowed in production.`));
+      callback(new Error(`CORS error: Origin ${origin} not allowed.`));
     }
   },
   credentials: true,
 };
-
-// Unified Export Based on Environment
-const isProduction = process.env.NODE_ENV === "production";
-
-const corsOptions = isProduction ? corsProOptions : corsDevOptions;
 
 module.exports = {
   corsOptions,
 };
+
