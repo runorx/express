@@ -31,6 +31,7 @@ const {
 const {
   checkUserStatus,
 } = require("../middlewares/userMiddleware/checkUserStatus");
+const { createAcctNo } = require("../controllers/createAcctNo");
 
 router.route("/create").post(authAdminProtect, createAccount, sendNotification);
 
@@ -58,5 +59,9 @@ router
 router
   .route("/withdraw/:id")
   .put(authUserProtect, checkUserStatus, checkPassword, checkBalance, withdraw);
+
+router
+  .route("/generateAcctNo/:clientId")
+  .put(createAcctNo)  
 
 module.exports = router;
