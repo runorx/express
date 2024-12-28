@@ -25,6 +25,7 @@
     "mongoose": "^6.3.6",
     "mongoose-plugin-autoinc": "^1.1.9",
     "nodemailer": "^6.9.16",
+    "twilio": "^5.4.0",
     "ua-parser-js": "^2.0.0"
   },
   "devDependencies": {
