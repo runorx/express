@@ -5,6 +5,8 @@ const cors = require("cors");
 
 const app = express();
 
+// app.set("trust proxy", true); // Enable trust proxy
+
 //connect to mongodb
 const { connectToMongoose } = require("./config/db");
 

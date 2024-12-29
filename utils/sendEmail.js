@@ -100,7 +100,7 @@ const sendOTPEmail = async (email) => {
   });
 
   const mailOptions = {
-    from: '"Express Bank"  process.env.GMAIL_USER',
+    from: '"Express Bank"  process.env.EMAIL_FROM',
     to: email,
     subject: "OTP Code",
 

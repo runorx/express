@@ -215,7 +215,7 @@ router.route("/send-otp").post(async (req, res) => {
       return res.status(400).json({ message: "Email is required." });
     }
     
-    console.log("Attempting to send OTP to:", email); // Debug log
+    // console.log("Attempting to send OTP to:", email); // Debug log
     
     await sendOTPEmail(email);
     return res.status(200).json({ 
