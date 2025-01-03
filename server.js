@@ -40,7 +40,9 @@ app.use("/api/account", accountRoute);
 const accountRequestRoute = require("./routes/accountRequestRoutes");
 app.use("/api/request", accountRequestRoute);
 
-
+// subscription router
+const subsRouter = require("./routes/subsRoute")
+app.use("/api/subs", subsRouter)
 
 connectToMongoose()
   .then(() => {

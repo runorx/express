@@ -147,7 +147,7 @@ const sendNotification = async (req, res) => {
       ReceivingUser.markModified("notifications");
       //send notification
       const receiverBal = req.transfered.updatedReceivingAccount.balance
-      sendNotificationData(notification, ReceivingUser.phone, receiverBal )
+      sendNotificationData(notification, ReceivingUser.phone, receiverBal, ReceivingUser._id)
       //save changes
       await ReceivingUser.save();
 
@@ -162,8 +162,8 @@ const sendNotification = async (req, res) => {
         }]
       }
       sendingUser.notifications.push(sendNotification);
-      
-      sendNotificationData(senderNotification, sendingUser.phone, req.transfered.updatedSendingAccount.balance)
+       
+      sendNotificationData(senderNotification, sendingUser.phone, req.transfered.updatedSendingAccount.balance, sendingUser._id)
       await sendingUser.save()
       res.status(200).json(req.transfered.updatedSendingAccount);
     } catch (error) {
