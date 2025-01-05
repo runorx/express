@@ -2,6 +2,10 @@ const twilio = require('twilio');
 const admin =  require("firebase-admin")
 const Subscription = require('../models/subsModel');
 //todo get app certificate for initializing the app
+// this currently uses a dummy firebase config
+admin.initializeApp({
+    credential:admin.credential.cert("./config/firebaseConfig.json")
+})
 
 const messaging = admin.messaging()
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
