@@ -124,47 +124,63 @@ const sendNotification = async (req, res) => {
   if (req.transfered) {
     try {
       //create a notification for transfered balance
-      const ReceivingUser = await User.findById(
-        req.transfered.updatedReceivingAccount.client_id
-      );
-      const sendingUser = await User.findById(req.transfered.updatedSendingAccount.client_id);
-
-      //notification for receiver
-      // create a notification object
-      const notification = {
-        type: "transfered-in", 
-        title: "Received Balance!",
-        message: `You Have Received New Balance Successfully!`,
-        data: [
-          {
-            transfered_Amount: req.transfered.balanceTransfered,
-            from: req.transfered.updatedSendingAccount.id,
-          },
-        ],
+      if (req.transfered.updatedReceivingAccount) {
+        const ReceivingUser = await User.findById(
+          req.transfered.updatedReceivingAccount.client_id
+        );
+        //notification for receiver
+        // create a notification object
+        const notification = {
+          type: "transfered-in",
+          title: "Received Balance!",
+          message: `You Have Received New Balance Successfully!`,
+          data: [
+            {
+              transfered_Amount: req.transfered.balanceTransfered,
+              from: req.transfered.updatedSendingAccount.id,
+            },
+          ],
+        };
+        //add notification to ReceivingUser
+        ReceivingUser.notifications.push(notification);
+        ReceivingUser.markModified("notifications");
+        //send notification
+        const receiverBal = req.transfered.updatedReceivingAccount.balance;
+        sendNotificationData(
+          notification,
+          ReceivingUser.phone,
+          receiverBal,
+          ReceivingUser._id
+        );
+        //save changes
+        await ReceivingUser.save();
       }
-      //add notification to ReceivingUser
-      ReceivingUser.notifications.push(notification);
-      ReceivingUser.markModified("notifications");
-      //send notification
-      const receiverBal = req.transfered.updatedReceivingAccount.balance
-      sendNotificationData(notification, ReceivingUser.phone, receiverBal, ReceivingUser._id)
-      //save changes
-      await ReceivingUser.save();
+
+      const sendingUser = await User.findById(
+        req.transfered.updatedSendingAccount.client_id
+      );
 
       // notification for sender
       const senderNotification = {
-        type:"approved",
-        title:"Money Sent",
-        message:"You have transfered money successfully",
-        data:[{
-          transfered_Amount: req.transfered.balanceTransfered,
-          to: req.transfered.updatedReceivingAccount.id
-        }]
-      }
-      sendingUser.notifications.push(sendNotification);
-       
-      sendNotificationData(senderNotification, sendingUser.phone, req.transfered.updatedSendingAccount.balance, sendingUser._id)
-      await sendingUser.save()
+        type: "approved",
+        title: "Money Sent",
+        message: "You have transfered money successfully",
+        data: [
+          {
+            transfered_Amount: req.transfered.balanceTransfered,
+            to: req.transfered.updatedReceivingAccount.id,
+          },
+        ],
+      };
+      sendingUser.notifications.push(senderNotification);
+
+      sendNotificationData(
+        senderNotification,
+        sendingUser.phone,
+        req.transfered.updatedSendingAccount.balance,
+        sendingUser._id
+      );
+      await sendingUser.save();
       res.status(200).json(req.transfered.updatedSendingAccount);
     } catch (error) {
       if (error.message.match(/(notification)/gi)) {

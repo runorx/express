@@ -24,6 +24,17 @@ const userSchema = new mongoose.Schema(
         message: "Please Enter A Valid User Name!",
       },
     },
+    fullName:{
+      type: String,
+      required: [true, "Please Type A Full Name!"],
+      validate: {
+        validator: function (v) {
+          let regex = new RegExp("^[a-zA-Z]+ [a-zA-Z]+$");
+          return regex.test(v);
+        },
+        message: "Please Enter A Valid Full Name!",
+      },
+    },
     email: {
       type: String,
       required: [true, "Please Type An Email!"],
@@ -53,6 +64,20 @@ const userSchema = new mongoose.Schema(
     //     message: "Please Enter A Valid EGY Phone Number!",
     //   },
     // },
+    bvn: {
+      type: String,
+      required: [true, "Please Type A BVN!"],
+      validate: {
+        validator: function (v) {
+          let regex = new RegExp("^[0-9]{11}$");
+          return regex.test(v);
+        },
+        message: "Please Enter A Valid BVN!",
+    }},
+    dateOfBirth:{
+      type: Date,
+      required: [true, "Please Type A Date Of Birth!"],
+    },
 
     phone: {
       type: String, // Change to String to accommodate '+' and non-numeric characters
@@ -66,7 +91,6 @@ const userSchema = new mongoose.Schema(
         message: "Please enter a valid phone number!",
       },
     },
-    
     full_addresse: {
       type: String,
       required: [true, "Please Type An Addresse!"],

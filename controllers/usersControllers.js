@@ -366,6 +366,33 @@ const getOneUser = async (req, res) => {
 //@Access >>>> public
 const createUser = async (req, res) => {
   try {
+    if (!req.body.bvn || !req.body.dateOfBirth || !req.body.name || !req.body.phone) {
+      return res.status(400).send("Please provide your BVN, Date of Birth, Name and Phone Number.");
+    }
+    // BVN Verification
+    const bvnResponse = await fetch(`${process.env.MONNIFY_URL}/api/v1/vas/bvn-details-match`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.MONNIFY_TK}`,
+      },
+      body: JSON.stringify({
+        bvn: req.body.bvn,
+        dateOfBirth: req.body.dateOfBirth,
+        name: req.body.name,
+        mobileNo: req.body.phone,
+      })
+    })
+    const bvnData = await bvnResponse.json();
+    if (bvnData.requestSuccessful === false) {
+      return res.status(400).send(bvnData.responseMessage);
+    }
+
+    if (bvnData.responseBody.name.matchPercentage < 80) {
+      return res.status(400).send("Name does not match BVN details.");
+    }
+
+
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = await User.create({
       user_name: req.body.name,
@@ -374,6 +401,8 @@ const createUser = async (req, res) => {
       phone: req.body.phone,
       full_addresse: req.body.addresse,
       zip_code: req.body.postal,
+      bvn: req.body.bvn,
+      dateOfBirth: req.body.dateOfBirth,
     });
     res.status(201).json({
       id: user.id,

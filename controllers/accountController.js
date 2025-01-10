@@ -1,5 +1,5 @@
 const Account = require("../models/accountModel");
-
+const crypto = require("crypto");
 //@desc   >>>> Create Account
 //@route  >>>> POST /api/account/create
 //@Access >>>> Private (through admin approve only)
@@ -61,28 +61,62 @@ const transfer = async (req, res, next) => {
 
     //get receiving user account
     const receivingAccount = await Account.findById(req.params.to_id);
+    if (sendingAccount.balance <= balanceTransfered) {
+      res.status(403).send("Insufficient balance");
+    }
+    const uuid = crypto.randomUUID(); //generate unique id for each transfer
+    const transferRes = await fetch(
+      `${process.env.MONNIFY_URL}/api/v2/disbursements/single`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + process.env.MONNIFY_TK,
+        },
+        body: JSON.stringify({
+          amount: balanceTransfered,
+          reference: `reference-${uuid}`,
+          narration: "Transfer", //todo get narratiion from user
+          destinationBankCode: "057", //todo get bank code
+          destinationAccountNumber: req.params.to_id,
+          currency: "NGN",
+          sourceAccountNumber: sendingAccount.acct_no,
+        }),
+      }
+    );
+    const transfer = await transferRes.json();
+    if (!transfer.requestSuccessful) {
+      return res.status(403).send("An error occured while transferring money");
+    }
 
-    //update both users' accounts with new tranfer values
+    const isReceivingAccountInBank = receivingAccount !== null;
+    let updatedReceivingAccount = null;
+    //update sending user accounts with new tranfer values
     // 1- balance
     sendingAccount.balance -= +balanceTransfered;
     sendingAccount.markModified("balance");
-    receivingAccount.balance += +balanceTransfered;
-    receivingAccount.markModified("balance");
+
     // 2- transfer log >> out (sending user)
     sendingAccount.out.push({
       to: receivingAccount.id,
       balance_transfered: balanceTransfered,
     });
     sendingAccount.markModified("out");
-    // 2- transfer log >> in (receiving user)
-    receivingAccount.in.push({
-      from: sendingAccount.id,
-      balance_transfered: balanceTransfered,
-    });
-    receivingAccount.markModified("in");
-    //Save Transfer operation for both users' accounts
+
+    //Save Transfer operation for sending user accounts
     const updatedSendingAccount = await sendingAccount.save();
-    const updatedReceivingAccount = await receivingAccount.save();
+
+    //update receiving user accounts if the receiving user is in the db with new tranfer values
+    if (isReceivingAccountInBank) {
+      receivingAccount.balance += +balanceTransfered;
+      receivingAccount.markModified("balance");
+      // 2- transfer log >> in (receiving user)
+      receivingAccount.in.push({
+        from: sendingAccount.id,
+        balance_transfered: balanceTransfered,
+      });
+      receivingAccount.markModified("in");
+      updatedReceivingAccount = await receivingAccount.save();
+    }
     //go to notification
     req.transfered = {
       updatedSendingAccount,
