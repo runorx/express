@@ -3,6 +3,7 @@ const router = express.Router();
 
 const {
   checkPassword,
+  checkPin,
 } = require("../middlewares/userMiddleware/userMiddlewares");
 
 const {
@@ -46,6 +47,7 @@ router
     authUserProtect,
     checkUserStatus,
     checkPassword,
+    checkPin,
     checkAccount,
     checkBalance,
     transfer,

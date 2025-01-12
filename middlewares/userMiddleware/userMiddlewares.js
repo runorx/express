@@ -51,7 +51,27 @@ const checkPassword = async (req, res, next) => {
   }
 };
 
+const checkPin = async (req, res, next) =>{
+  try {
+    //get user
+    const user = await User.findById(req.body.id);
+    const isPin = await bycrpt.compare(
+      req.body.pin,
+      user.pin
+    );
+    if (isPin) {
+      //okay right password
+      return next();
+    } else {
+      return res.status(400).send("Wrong old pin");
+    }
+  }catch(e){
+    return res.status(500).send(`Error: ${e}`);
+  } 
+}
+
 module.exports = {
   validatePassword,
   checkPassword,
+  checkPin,
 };

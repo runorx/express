@@ -51,6 +51,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "Please Type A Password!"],
     },
+    pin:{
+      type: String,
+      required: [true, "Please Type A Pin!"],
+      validate: {
+        validator: function (v) {
+          let regex = new RegExp("^[0-9]{4}$");
+          return regex.test(v);
+        },
+        message: "Please Enter A Valid Pin!",
+    }},
     // phone: {
     //   type: Number,
     //   required: [true, "Please Type AN EGY Phone Number!"],
