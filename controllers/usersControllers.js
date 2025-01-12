@@ -354,6 +354,7 @@ const getOneUser = async (req, res) => {
       phone: user.phone,
       accounts: user.accounts,
       notifications: user.notifications,
+      bvn:user.bvn,
     });
   } catch (error) {
     if (!user) return res.status(404).send("User Not Found!");

@@ -63,7 +63,7 @@ const checkPin = async (req, res, next) =>{
       //okay right password
       return next();
     } else {
-      return res.status(400).send("Wrong old pin");
+      return res.status(400).send("Wrong pin");
     }
   }catch(e){
     return res.status(500).send(`Error: ${e}`);
