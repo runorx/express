@@ -54,7 +54,7 @@ const deleteAccount = async (req, res) => {
 //@route  >>>> PUT /api/account/transfer/:from_id/:to_id
 //@Access >>>> private(for User only)
 const transfer = async (req, res, next) => {
-  const { balanceTransfered } = req.body;
+  const { balanceTransfered, bankCode, narration } = req.body;
   try {
     //get sending user account
     const sendingAccount = await Account.findById(req.params.from_id);
@@ -63,6 +63,9 @@ const transfer = async (req, res, next) => {
     const receivingAccount = await Account.findById(req.params.to_id);
     if (sendingAccount.balance <= balanceTransfered) {
       res.status(403).send("Insufficient balance");
+    }
+    if (!bankCode) {
+      return res.status(400).send("Bank Code is required");
     }
     const uuid = crypto.randomUUID(); //generate unique id for each transfer
     const transferRes = await fetch(
@@ -75,8 +78,8 @@ const transfer = async (req, res, next) => {
         body: JSON.stringify({
           amount: balanceTransfered,
           reference: `reference-${uuid}`,
-          narration: "Transfer", //todo get narratiion from user
-          destinationBankCode: "057", //todo get bank code
+          narration: narration ? narration : "Transfer", //todo get narratiion from user
+          destinationBankCode: bankCode, //todo get bank code
           destinationAccountNumber: req.params.to_id,
           currency: "NGN",
           sourceAccountNumber: sendingAccount.acct_no,
