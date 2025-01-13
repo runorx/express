@@ -36,7 +36,7 @@ const checkPassword = async (req, res, next) => {
     const user = await User.findById(req.body.id);
     //compare password
     const isPassword = await bycrpt.compare(
-      req.body.oldPassword,
+      req.body.password,
       user.password
     );
 
@@ -44,7 +44,7 @@ const checkPassword = async (req, res, next) => {
       //okay right password
       return next();
     } else {
-      return res.status(400).send("Wrong old password");
+      return res.status(400).send("Wrong  password");
     }
   } catch (error) {
     return res.status(500).send("Ooops!! Something Went Wrong, Try again...");

@@ -57,7 +57,7 @@ const checkBalance = async (req, res, next) => {
 
   try {
     //get account
-    const account = await Account.findById(accountId);
+    const account = await Account.findOne({acct_no:accountId});
 
     //compare balance with requested balance
     if (account.balance >= requestedBalance) {

@@ -14,19 +14,20 @@ const checkAccount = async (req, res, next) => {
 
   try {
     //get account
-    account = await Account.findById(req.params.to_id);
-
+    //account = await Account.findOne({acct_no: req.params.to_id});
+    
+    // this is not necessary because the acoount being checked may not be in the database, but still be a valid bank account
     //check for account being exist.
-    if (!account) {
-      return res
-        .status(400)
-        .send(
-          "The Account you Sending to is Not Exist!, Make Sure you type Correctly"
-        );
-    } else {
-      //okay valid account to proceed
-      return next();
-    }
+    // if (!account) {
+    //   return res
+    //     .status(400)
+    //     .send(
+    //       "The Account you Sending to is Not Exist!, Make Sure you type Correctly"
+    //     );
+    // } else {
+    //   //okay valid account to proceed
+    //   return next();
+    // }
   } catch (error) {
     if (!account) {
       return res
